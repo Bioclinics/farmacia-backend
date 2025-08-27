@@ -2,12 +2,30 @@ import { Module } from '@nestjs/common';
 import { MyConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { EmailModule } from './shared/services/email/email.module';
+import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { ProductsModule } from './modules/products/products.module';
+import { ProductOutputsModule } from './modules/product_outputs/product_outputs.module';
+import { ProductInputsModule } from './modules/product_inputs/product_inputs.module';
+import { ProductTypesModule } from './modules/product_types/product_types.module';
+import { LaboratoriesModule } from './modules/laboratories/laboratories.module';
+import { SalesModule } from './modules/sales/sales.module';
+import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
 	imports: [
 		MyConfigModule,
 		DatabaseModule,
 		EmailModule,
+		UsersModule,
+		RolesModule,
+		ProductsModule,
+		ProductOutputsModule,
+		ProductInputsModule,
+		ProductTypesModule,
+		LaboratoriesModule,
+		SalesModule,
+		StaffModule,
 	],
 })
 export class AppModule { }
