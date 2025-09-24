@@ -1,6 +1,14 @@
+import { IsString, IsOptional, IsBoolean } from "class-validator";
+
 export class CreateProductTypeDto {
+  @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
-  is_active: boolean;
-  is_deleted: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

@@ -1,26 +1,50 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-import { BaseFour } from "src/database/entities/base-four.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { ProductType } from "../../product_types/entities/product_type.entity";
 
 @Entity("products")
-export class Product extends BaseFour {
-    @PrimaryGeneratedColumn({ name: "id_product", type: "bigint" })
-    id: number;
+export class Product {
+  @PrimaryGeneratedColumn({ name: "id_product" })
+  id: number;
 
-    @Column({ name: "id_laboratory", type: "int" })
-    idLaboratory: number;
+  @Column({ length: 200 })
+  name: string;
 
-    @Column({ name: "id_product_type", type: "int" })
-    idProductType: number;
+  @Column({ name: "id_type" })
+  idType: number;
 
-    @Column({ name: "name", type: "varchar", length: 200 })
-    name: string;
+  @ManyToOne(() => ProductType)
+  @JoinColumn({ name: "id_type" })
+  type: ProductType;
 
-    @Column({ name: "description", type: "text", nullable: true })
-    description: string;
+  @Column("numeric", { precision: 12, scale: 2, name: "cost_price", default: 0 })
+  costPrice: number;
 
-    @Column({ name: "stock", type: "int" })
-    stock: number;
+  @Column("numeric", { precision: 12, scale: 2 })
+  price: number;
 
-    @Column({ name: "unit_price", type: "decimal", precision: 10, scale: 2 })
-    unitPrice: number;
+  @Column({ name: "min_stock", default: 0 })
+  minStock: number;
+
+  @Column({ default: 0 })
+  stock: number;
+
+  @Column({ name: "is_active", default: true })
+  isActive: boolean;
+
+  @Column({ name: "is_deleted", default: false })
+  isDeleted: boolean;
+
+  @CreateDateColumn({ name: "created_at" })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: "updated_at" })
+  updatedAt: Date;
 }

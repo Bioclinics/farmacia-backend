@@ -1,11 +1,26 @@
-export class CreateProductDto {
-  name: string;
-  product_types_id_type: number;
-  cost_price: number;
-  price: number;
-  stock: number;
-  min_stock: number;
-  is_active: boolean;
-  is_delete: boolean;
-}
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
+export class CreateProductDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  idType: number;
+
+  @IsNumber()
+  costPrice: number;
+
+  @IsNumber()
+  price: number;
+
+  @IsNumber()
+  stock: number;
+
+  @IsNumber()
+  minStock: number;
+
+  @IsOptional()
+  isActive?: boolean;
+}

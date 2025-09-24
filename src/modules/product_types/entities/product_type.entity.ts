@@ -1,14 +1,19 @@
-import { BaseFour } from "src/database/entities/base-four.entity";
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
-@Entity('product_types')
-export class ProductType extends BaseFour {
-    @PrimaryGeneratedColumn()
-    id: number;
+@Entity("product_types")
+export class ProductType {
+  @PrimaryGeneratedColumn({ name: "id_type" })
+  id: number;
 
-    @Column({ type: 'varchar', length: 100 })
-    name: string;
+  @Column({ name: "name" })
+  name: string;
 
-    @Column({ type: 'text' })
-    description: string;
+  @Column({ name: "description", nullable: true })
+  description?: string;
+
+  @Column({ name: "is_active", default: true })
+  isActive: boolean;
+
+  @Column({ name: "is_deleted", default: false })
+  isDeleted: boolean;
 }
