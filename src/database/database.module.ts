@@ -17,7 +17,7 @@ import { MyDataBaseConfig } from 'src/config/services/database.config';
                     port: 5432,
                     username: 'postgres',
                     password: '12345',
-                    database: 'bd_bioclinics_farmacia',
+                    database: 'db-farmacia',
                     autoLoadEntities: true,
                     synchronize: false,
                     logging: dbConfig.logging ?? false,

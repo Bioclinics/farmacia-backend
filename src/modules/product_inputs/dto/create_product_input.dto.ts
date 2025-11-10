@@ -24,7 +24,7 @@ export class CreateProductInputDto {
 
   @ApiProperty()
   @IsBoolean()
-  isAjustment: boolean;
+  isAdjustment: boolean;
 
   @ApiProperty({ required: false })
   @IsOptional()

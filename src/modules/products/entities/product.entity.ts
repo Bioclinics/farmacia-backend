@@ -1,50 +1,39 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from "typeorm";
-import { ProductType } from "../../product_types/entities/product_type.entity";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { ProductType } from 'src/modules/product_types/entities/product_type.entity';
 
-@Entity("products")
+@Entity('products')  // 👈 nombre real de la tabla
 export class Product {
-  @PrimaryGeneratedColumn({ name: "id_product" })
-  id: number;
+  @PrimaryGeneratedColumn()
+  id_product: number;
 
   @Column({ length: 200 })
   name: string;
 
-  @Column({ name: "id_type" })
-  idType: number;
+  @Column()
+  id_type: number; // 👈 clave foránea
 
-  @ManyToOne(() => ProductType)
-  @JoinColumn({ name: "id_type" })
-  type: ProductType;
+  @ManyToOne(() => ProductType, (type) => type.products)
+  @JoinColumn({ name: 'id_type' })
+  productType: ProductType;
 
-  @Column("numeric", { precision: 12, scale: 2, name: "cost_price", default: 0 })
-  costPrice: number;
-
-  @Column("numeric", { precision: 12, scale: 2 })
+  @Column({ type: 'numeric', precision: 12, scale: 2 })
   price: number;
 
-  @Column({ name: "min_stock", default: 0 })
-  minStock: number;
-
-  @Column({ default: 0 })
+  @Column({ type: 'integer', default: 0 })
   stock: number;
 
-  @Column({ name: "is_active", default: true })
-  isActive: boolean;
+  @Column({ type: 'integer', default: 0 })
+  min_stock: number;
 
-  @Column({ name: "is_deleted", default: false })
-  isDeleted: boolean;
+  @Column({ default: true })
+  is_active: boolean;
 
-  @CreateDateColumn({ name: "created_at" })
-  createdAt: Date;
+  @Column({ default: false })
+  is_deleted: boolean;
 
-  @UpdateDateColumn({ name: "updated_at" })
-  updatedAt: Date;
+  @Column({ type: 'timestamp', default: () => 'now()' })
+  created_at: Date;
+
+  @Column({ type: 'timestamp', default: () => 'now()' })
+  updated_at: Date;
 }
