@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ProductType } from 'src/modules/product_types/entities/product_type.entity';
 
-@Entity('products')  // 👈 nombre real de la tabla
+@Entity('products')
 export class Product {
   @PrimaryGeneratedColumn()
   id_product: number;
@@ -10,7 +10,7 @@ export class Product {
   name: string;
 
   @Column()
-  id_type: number; // 👈 clave foránea
+  id_type: number;
 
   @ManyToOne(() => ProductType, (type) => type.products)
   @JoinColumn({ name: 'id_type' })

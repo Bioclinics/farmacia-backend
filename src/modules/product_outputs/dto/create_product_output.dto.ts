@@ -1,34 +1,28 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductOutputDto {
-  @ApiProperty()
-  @IsInt()
-  idProduct: number;
-
-  @ApiProperty({ required: false })
   @IsOptional()
   @IsInt()
-  idSale?: number;
+  id_sale?: number;
 
-  @ApiProperty()
-  @IsBoolean()
-  isAdjustment: boolean;
+  @IsInt()
+  id_product: number;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  reason?: string;
-
-  @ApiProperty()
   @IsInt()
   quantity: number;
 
-  @ApiProperty()
   @IsNumber()
-  unitPrice: number;
+  unit_price: number;
 
-  @ApiProperty()
+  @IsOptional()
   @IsNumber()
-  pay: number;
+  subtotal?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  is_adjustment?: boolean;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }

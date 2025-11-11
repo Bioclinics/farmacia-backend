@@ -1,71 +1,82 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { CreateProductDto } from '../dto/create_product.dto';
 import { UpdateProductDto } from '../dto/update_product.dto';
-import { ProductType } from '../../product_types/entities/product_type.entity';
+
+interface FindAllParams {
+  name?: string;
+  type?: number;
+  isActive?: boolean;
+}
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>,
+    private readonly repo: Repository<Product>,
   ) {}
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepo.find({
-      where: { is_deleted: false },
-      relations: ['productType'], 
+  async findAll(params: FindAllParams): Promise<Product[]> {
+    const where: any = { is_deleted: false };
+
+    if (params.name) {
+      where.name = ILike(`%${params.name}%`);
+    }
+
+    if (params.type !== undefined) {
+      where.id_type = params.type;
+    }
+
+    if (params.isActive !== undefined) {
+      where.is_active = params.isActive;
+    }
+
+    return this.repo.find({
+      where,
+      relations: ['productType'],
+      order: { name: 'ASC' },
     });
   }
 
   async findOne(id: number): Promise<Product> {
-    const product = await this.productRepo.findOne({
+    const product = await this.repo.findOne({
       where: { id_product: id, is_deleted: false },
       relations: ['productType'],
     });
-
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
+    if (!product) throw new NotFoundException(`Producto con id ${id} no encontrado`);
     return product;
   }
 
   async create(dto: CreateProductDto): Promise<Product> {
-    const newProduct = this.productRepo.create({
-      name: dto.name,
+    const newProduct = this.repo.create({
+      ...dto,
       id_type: dto.idType,
-      price: dto.price,
-      min_stock: dto.minStock ?? 0,
-      stock: dto.stock ?? 0,
       is_active: dto.isActive ?? true,
-    } as Partial<Product>);
-
-    return this.productRepo.save(newProduct);
+      stock: dto.stock ?? 0,
+      min_stock: dto.minStock ?? 0,
+    });
+    return this.repo.save(newProduct);
   }
 
-  async update(id: number, changes: UpdateProductDto): Promise<Product> {
+  async update(id: number, dto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
+    if (dto.idType !== undefined) product.id_type = dto.idType;
+    if (dto.name !== undefined) product.name = dto.name;
+    if (dto.price !== undefined) product.price = dto.price;
+    if (dto.stock !== undefined) product.stock = dto.stock;
+    if (dto.minStock !== undefined) product.min_stock = dto.minStock;
+    if (dto.isActive !== undefined) product.is_active = dto.isActive;
 
-    // Adaptamos los nombres camelCase del DTO a snake_case de la entidad
-    const updatedFields: Partial<Product> = {
-      ...(changes.name && { name: changes.name }),
-      ...(changes.idType && { id_type: changes.idType }),
-      ...(changes.price && { price: changes.price }),
-      ...(changes.minStock !== undefined && { min_stock: changes.minStock }),
-      ...(changes.stock !== undefined && { stock: changes.stock }),
-      ...(changes.isActive !== undefined && { is_active: changes.isActive }),
-    };
-
-    this.productRepo.merge(product, updatedFields);
-    return this.productRepo.save(product);
+    product.updated_at = new Date();
+    return this.repo.save(product);
   }
 
-  async remove(id: number): Promise<Product> {
+  async remove(id: number) {
     const product = await this.findOne(id);
     product.is_deleted = true;
-    return this.productRepo.save(product);
+    await this.repo.save(product);
+    return { message: 'Producto eliminado correctamente' };
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Query, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
 import { ProductsService } from '../services/products.service';
 import { CreateProductDto } from '../dto/create_product.dto';
 import { UpdateProductDto } from '../dto/update_product.dto';
@@ -7,9 +7,18 @@ import { UpdateProductDto } from '../dto/update_product.dto';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // GET /products?name=xxx&type=1&isActive=true
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(
+    @Query('name') name?: string,
+    @Query('type') type?: string,
+    @Query('isActive') isActive?: string,
+  ) {
+    return this.productsService.findAll({
+      name,
+      type: type ? Number(type) : undefined,
+      isActive: isActive !== undefined ? isActive === 'true' : undefined,
+    });
   }
 
   @Get(':id')

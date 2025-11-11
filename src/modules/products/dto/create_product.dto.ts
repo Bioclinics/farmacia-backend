@@ -8,14 +8,17 @@ export class CreateProductDto {
   idType: number;
 
   @IsNumber()
+  @Min(0)
   price: number;
 
   @IsOptional()
   @IsInt()
+  @Min(0)
   minStock?: number;
 
   @IsOptional()
   @IsInt()
+  @Min(0)
   stock?: number;
 
   @IsOptional()
