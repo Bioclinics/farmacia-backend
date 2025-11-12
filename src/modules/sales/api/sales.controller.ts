@@ -1,4 +1,8 @@
-import { Controller, Get, Post, Body, Inject } from "@nestjs/common";
+import { Controller, Get, Post, Body, Inject, Query } from "@nestjs/common";
+import { UseGuards } from '@nestjs/common';
+import { Roles } from 'src/common/utils/roles.decorator';
+import { RolesGuard } from 'src/common/utils/roles.guard';
+import { RolesEnum } from 'src/shared/enums/roles.enum';
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { DataSource } from "typeorm";
 import { SalesService } from "../services/sales.service";
@@ -7,6 +11,7 @@ import { Sale } from "../entities/sale.entity";
 
 @ApiTags('Sales')
 @Controller("sales")
+@UseGuards(RolesGuard)
 export class SalesController {
     constructor(
         private readonly salesService: SalesService,
@@ -15,15 +20,19 @@ export class SalesController {
     ) {}
 
     @Get()
+    @Roles(RolesEnum.STAFF, RolesEnum.ADMIN)
     @ApiOperation({ summary: 'Obtener todas las ventas' })
     @ApiResponse({ status: 200, description: 'Lista de ventas', type: [Sale] })
-    async findAll(): Promise<Sale[]> {
-        return await this.salesService.findAll();
+    async findAll(@Query('date') date?: string): Promise<Sale[]> {
+        const filters: any = {}
+        if (date) filters.date = date
+        return await this.salesService.findAll(filters);
     }
 
     @Post()
     @ApiOperation({ summary: 'Crear una nueva venta con productos (outputs)' })
     @ApiResponse({ status: 201, description: 'Venta creada con outputs', type: Sale })
+    @Roles(RolesEnum.STAFF, RolesEnum.ADMIN)
     async create(@Body() payload: { idUser: number; total: number; notes?: string; items?: any[] }): Promise<any> {
         // Use transaction to ensure consistency
         const queryRunner = this.dataSource.createQueryRunner();

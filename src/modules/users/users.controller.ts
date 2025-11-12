@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Roles } from 'src/common/utils/roles.decorator';
+import { RolesGuard } from 'src/common/utils/roles.guard';
+import { RolesEnum } from 'src/shared/enums/roles.enum';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -7,10 +10,12 @@ import { User } from './entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
+@UseGuards(RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Crear un nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario creado exitosamente', type: User })
   async create(@Body() createUserDto: CreateUserDto) {
@@ -18,13 +23,18 @@ export class UsersController {
   }
 
   @Get()
+  @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios', type: [User] })
-  async findAll() {
-    return await this.usersService.findAll();
+  async findAll(@Query('name') name?: string, @Query('isActive') isActive?: string) {
+    const filters: any = {}
+    if (name) filters.name = name
+    if (typeof isActive !== 'undefined') filters.isActive = isActive === 'true'
+    return await this.usersService.findAll(filters);
   }
 
   @Get(':id')
+  @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario encontrado', type: User })
@@ -33,6 +43,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Actualizar un usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario actualizado', type: User })
@@ -41,10 +52,25 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Eliminar (marcar como eliminado) un usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado' })
   async remove(@Param('id') id: string) {
     return await this.usersService.remove(+id);
+  }
+
+  @Patch(':id/activate')
+  @Roles(RolesEnum.ADMIN)
+  @ApiOperation({ summary: 'Activar un usuario' })
+  async activate(@Param('id') id: string) {
+    return await this.usersService.setActive(+id, true);
+  }
+
+  @Patch(':id/deactivate')
+  @Roles(RolesEnum.ADMIN)
+  @ApiOperation({ summary: 'Desactivar un usuario' })
+  async deactivate(@Param('id') id: string) {
+    return await this.usersService.setActive(+id, false);
   }
 }

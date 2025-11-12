@@ -10,8 +10,19 @@ export class SalesService {
         private readonly salesRepository: Repository<Sale>,
     ) {}
 
-    async findAll(): Promise<Sale[]> {
-        return await this.salesRepository.find({ relations: ['user'] });
+    async findAll(filters?: { date?: string }): Promise<Sale[]> {
+        const qb = this.salesRepository.createQueryBuilder('sale')
+            .leftJoinAndSelect('sale.user', 'user')
+            .orderBy('sale.created_at', 'DESC');
+
+        if (filters?.date) {
+            // filter by exact day (UTC)
+            const start = `${filters.date}T00:00:00.000Z`
+            const end = `${filters.date}T23:59:59.999Z`
+            qb.andWhere('sale.created_at BETWEEN :start AND :end', { start, end })
+        }
+
+        return await qb.getMany();
     }
 
     async create(payload: { idUser: number; total: number; notes?: string }, manager?: EntityManager): Promise<Sale> {

@@ -1,4 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/common/utils/roles.decorator';
+import { RolesGuard } from 'src/common/utils/roles.guard';
+import { RolesEnum } from 'src/shared/enums/roles.enum';
+import { Public } from 'src/common/utils/public.decorator';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
@@ -9,6 +14,7 @@ import { RegisterDto } from '../dto/register.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiResponse({ status: 200, description: 'Login exitoso, devuelve token JWT y datos del usuario' })
@@ -17,7 +23,9 @@ export class AuthController {
     return await this.authService.login(loginDto);
   }
 
+  // Register is admin-only now (protected). Keep it non-public.
   @Post('register')
+  @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Registrar nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente, devuelve token JWT' })
   @ApiResponse({ status: 400, description: 'Error en validación de datos' })

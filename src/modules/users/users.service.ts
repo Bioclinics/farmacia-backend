@@ -31,11 +31,27 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.usersRepository.find({
-      where: { isDeleted: false },
-      relations: ['role'],
-    });
+  async findAll(filters?: { name?: string; isActive?: boolean }): Promise<User[]> {
+    const qb = this.usersRepository.createQueryBuilder('user')
+      .where('user.isDeleted = :isDeleted', { isDeleted: false })
+      .leftJoinAndSelect('user.role', 'role')
+
+    if (filters) {
+      if (filters.name) {
+        qb.andWhere('(user.name ILIKE :name OR user.username ILIKE :name)', { name: `%${filters.name}%` })
+      }
+      if (typeof filters.isActive === 'boolean') {
+        qb.andWhere('user.isActive = :isActive', { isActive: filters.isActive })
+      }
+    }
+
+    return await qb.getMany();
+  }
+
+  async setActive(id: number, active: boolean): Promise<User> {
+    const user = await this.findOne(id);
+    user.isActive = active;
+    return await this.usersRepository.save(user);
   }
 
   async findOne(id: number): Promise<User> {

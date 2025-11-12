@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query } from '@nestjs/common';
 import { ProductOutputsService } from '../services/product_outputs.service';
 import { CreateProductOutputDto } from '../dto/create_product_output.dto';
 import { UpdateProductOutputDto } from '../dto/update_product_output.dto';
@@ -8,7 +8,8 @@ export class ProductOutputsController {
   constructor(private readonly productOutputsService: ProductOutputsService) {}
 
   @Get()
-  findAll() {
+  findAll(@Query('saleId') saleId?: string) {
+    if (saleId) return this.productOutputsService.findBySale(Number(saleId))
     return this.productOutputsService.findAll();
   }
 
