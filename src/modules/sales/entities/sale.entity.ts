@@ -1,12 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 import { BaseFour } from "src/database/entities/base-four.entity";
+import { BaseEntity } from "src/database/entities/base.entity";
 
 @Entity("sales")
-export class Sale extends BaseFour {
+export class Sale extends BaseEntity {
     @PrimaryGeneratedColumn({ name: "id_sale", type: "bigint" })
     id: number;
 
-    @Column({ name: "id_staff", type: "int" })
+    @Column({ name: "id_user", type: "int" })
     idStaff: number;
 
     @Column({ name: "notes", type: "varchar", length: 500, nullable: true })
