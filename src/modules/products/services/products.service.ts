@@ -1,15 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Product } from '../entities/product.entity';
 import { CreateProductDto } from '../dto/create_product.dto';
 import { UpdateProductDto } from '../dto/update_product.dto';
-
-interface FindAllParams {
-  name?: string;
-  type?: number;
-  isActive?: boolean;
-}
+import { ProductsFilterDto } from '../dto/products-filter.dto';
 
 @Injectable()
 export class ProductsService {
@@ -18,26 +13,37 @@ export class ProductsService {
     private readonly repo: Repository<Product>,
   ) {}
 
-  async findAll(params: FindAllParams): Promise<Product[]> {
-    const where: any = { is_deleted: false };
+  /**
+   * Find all products with pagination and filters.
+   * Returns { data, total, page, limit }
+   */
+  async findAll(params: ProductsFilterDto): Promise<{ data: Product[]; total: number; page: number; limit: number; pages: number }> {
+    const page = params.page ?? 1;
+    const limit = params.limit ?? 10;
+
+    const qb = this.repo.createQueryBuilder('p')
+      .leftJoinAndSelect('p.productType', 'productType')
+      .where('p.is_deleted = false');
 
     if (params.name) {
-      where.name = ILike(`%${params.name}%`);
+      qb.andWhere('p.name ILIKE :name', { name: `%${params.name}%` });
     }
 
     if (params.type !== undefined) {
-      where.id_type = params.type;
+      qb.andWhere('p.id_type = :type', { type: params.type });
     }
 
     if (params.isActive !== undefined) {
-      where.is_active = params.isActive;
+      qb.andWhere('p.is_active = :isActive', { isActive: params.isActive });
     }
 
-    return this.repo.find({
-      where,
-      relations: ['productType'],
-      order: { name: 'ASC' },
-    });
+    qb.orderBy('p.name', 'ASC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+    const pages = Math.ceil(total / limit);
+    return { data, total, page, limit, pages };
   }
 
   async findOne(id: number): Promise<Product> {
@@ -78,5 +84,12 @@ export class ProductsService {
     product.is_deleted = true;
     await this.repo.save(product);
     return { message: 'Producto eliminado correctamente' };
+  }
+
+  async setActive(id: number, active: boolean): Promise<Product> {
+    const product = await this.findOne(id);
+    product.is_active = active;
+    product.updated_at = new Date();
+    return this.repo.save(product);
   }
 }
