@@ -83,17 +83,9 @@ export class ProductOutputsService {
       const saved = await repo.save(toCreate);
       created.push(saved);
 
-      // adjust product stock (reduce by quantity)
-      try{
-        const product = await productRepo.findOne({ where: { id_product: saved.id_product } });
-        if(product){
-          product.stock = (product.stock ?? 0) - (saved.quantity ?? 0);
-          await productRepo.save(product);
-        }
-      }catch(e){
-        // ignore stock update errors here; transaction will roll back if needed
-        throw e;
-      }
+      // NOTE: Stock deduction is handled by a database trigger in production.
+      // Do NOT adjust product.stock here to avoid double-decrement when the DB trigger runs.
+      // If you need to debug stock changes, inspect DB trigger logs or enable separate audit logs.
     }
 
     return created;

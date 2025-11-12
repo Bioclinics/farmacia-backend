@@ -19,7 +19,7 @@ export class SalesProcessService {
 		return this.dataSource.transaction(async (manager) => {
 			const outputsPrepared = await this.productOutputsService.prepareData(data.outputs);
 			const sale = await this.salesService.create({
-				idStaff: data.idStaff,
+				idUser: data.idStaff,
 				total: outputsPrepared.total
 			},manager)
 			const outputs = await this.productOutputsService.createManyForSale(sale.id,outputsPrepared.outputs,manager);

@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-import { BaseFour } from "src/database/entities/base-four.entity";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { BaseEntity } from "src/database/entities/base.entity";
+import { User } from "../../users/entities/user.entity";
 
 @Entity("sales")
 export class Sale extends BaseEntity {
@@ -8,11 +8,15 @@ export class Sale extends BaseEntity {
     id: number;
 
     @Column({ name: "id_user", type: "int" })
-    idStaff: number;
+    idUser: number;
 
     @Column({ name: "notes", type: "varchar", length: 500, nullable: true })
     notes: string;
 
     @Column({ name: "total", type: "decimal", precision: 10, scale: 2 })
     total: number;
+
+    @ManyToOne(() => User, { eager: true })
+    @JoinColumn({ name: "id_user" })
+    user: User;
 }

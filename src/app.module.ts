@@ -10,6 +10,9 @@ import { LaboratoriesModule } from './modules/laboratories/laboratories.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { SalesProcessModule } from './app/sales-process/sales-process.module';
+import { AuthModule } from './app/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
 	imports: [
@@ -24,6 +27,9 @@ import { SalesProcessModule } from './app/sales-process/sales-process.module';
 		SalesModule,
 		StaffModule,
 		SalesProcessModule,
+		AuthModule,
+		UsersModule,
+		RolesModule,
 	],
 })
 export class AppModule { }
