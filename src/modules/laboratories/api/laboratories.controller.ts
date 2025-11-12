@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, Put, UseGuards } from '@nestjs/common';
+import { Roles } from 'src/common/utils/roles.decorator';
+import { RolesGuard } from 'src/common/utils/roles.guard';
+import { RolesEnum } from 'src/shared/enums/roles.enum';
 import { LaboratoriesService } from '../services/laboratories.service';
 import { CreateLaboratoryDto } from '../dto/inputs/create-laboratory.dto';
 import { UpdateLaboratoryDto } from '../dto/inputs/update-laboratory.dto';
@@ -11,10 +14,12 @@ import { FindAlllaboratoriesResponseDto } from '../dto/outputs/find-all-laborato
 import { FindOnelaboratoryResponse } from '../dto/outputs/find-one-laboratory-response.dto';
 
 @Controller('laboratories')
+@UseGuards(RolesGuard)
 export class LaboratoriesController {
 	constructor(private readonly laboratoriesService: LaboratoriesService) { }
 
 	@Post()
+	@Roles(RolesEnum.ADMIN)
 	@ApiOperation({
 		summary: 'Api para crear un laboratorio',
 	})
@@ -71,6 +76,7 @@ export class LaboratoriesController {
 	}
 
 	@Put(':idLaboratory')
+	@Roles(RolesEnum.ADMIN)
 	@ApiOperation({
 		summary: 'Api para actualizar el laboratorio',
 	})
@@ -92,6 +98,7 @@ export class LaboratoriesController {
 	}
 
 	@Delete(':idLaboratory')
+	@Roles(RolesEnum.ADMIN)
 	@ApiOperation({
 		summary: 'Api para eliminar un laboratorio'
 	})

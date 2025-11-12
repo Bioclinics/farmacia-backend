@@ -14,7 +14,44 @@ export class ProductOutputsService {
   ) {}
 
   async findAll(): Promise<ProductOutput[]> {
-    return await this.productOutputsRepository.find();
+    // Join with products to include product info and order by newest first
+    const rows = await this.productOutputsRepository.createQueryBuilder('o')
+      .leftJoin(Product, 'p', 'p.id_product = o.id_product')
+      .select([
+        'o.id_output AS id_output',
+        'o.id_sale AS id_sale',
+        'o.id_product AS id_product',
+        'o.quantity AS quantity',
+        'o.unit_price AS unit_price',
+        'o.subtotal AS subtotal',
+        'o.is_adjustment AS is_adjustment',
+        'o.reason AS reason',
+        'o.created_at AS created_at',
+        'p.id_product AS product_id',
+        'p.name AS product_name',
+        'p.price AS product_price',
+        'p.stock AS product_stock',
+      ])
+      .orderBy('o.created_at', 'DESC')
+      .getRawMany();
+
+    return rows.map(r => ({
+      id_output: r.id_output,
+      id_sale: r.id_sale,
+      id_product: r.id_product,
+      quantity: r.quantity,
+      unit_price: r.unit_price,
+      subtotal: r.subtotal,
+      is_adjustment: r.is_adjustment,
+      reason: r.reason,
+      created_at: r.created_at,
+      product: {
+        id_product: r.product_id,
+        name: r.product_name,
+        price: r.product_price,
+        stock: r.product_stock,
+      }
+    })) as any;
   }
 
   async create(dto: CreateProductOutputDto): Promise<ProductOutput> {
