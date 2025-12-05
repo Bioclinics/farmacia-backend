@@ -12,7 +12,7 @@ import { MyEmailConfig } from './services/email.config';
     imports: [
         NestConfigModule.forRoot({
             isGlobal: true,
-            envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+            envFilePath: `.env`,
             validationSchema
         }),
     ],
