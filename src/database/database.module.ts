@@ -12,12 +12,12 @@ import { MyDataBaseConfig } from 'src/config/services/database.config';
             useFactory: (configService: MyDataBaseConfig) => {
                 const dbConfig = configService.get();
                 return {
-                    type: 'postgres',
-                    host: 'localhost',
-                    port: 5432,
-                    username: 'postgres',
-                    password: '12345',
-                    database: 'db-farmacia',
+                    type: dbConfig.type as 'postgres',
+                    host: dbConfig.host ?? 'localhost',
+                    port: dbConfig.port ?? 5432,
+                    username: dbConfig.username ?? 'postgres',
+                    password: dbConfig.password ?? '12345',
+                    database: dbConfig.database ?? 'db-farmacia',
                     autoLoadEntities: true,
                     synchronize: false,
                     logging: dbConfig.logging ?? false,
