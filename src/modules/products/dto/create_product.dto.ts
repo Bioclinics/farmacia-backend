@@ -10,6 +10,10 @@ export class CreateProductDto {
   @IsInt()
   idType: number;
 
+  @ApiProperty({ description: 'Id de la marca del producto' })
+  @IsInt()
+  idBrand: number;
+
   @ApiProperty({ description: 'Precio del producto', example: 0 })
   @IsNumber()
   @Min(0)

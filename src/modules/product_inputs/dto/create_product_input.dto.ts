@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
 
 export class CreateProductInputDto {
   @ApiProperty()
@@ -13,6 +13,11 @@ export class CreateProductInputDto {
   @ApiProperty()
   @IsInt()
   quantity: number;
+
+  @ApiProperty()
+  @IsInt()
+  @Min(1)
+  unitsPerBox: number;
 
   @ApiProperty()
   @IsNumber()

@@ -20,4 +20,10 @@ export class ProductsFilterDto extends PaginationDto {
   @Type(() => Boolean)
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'Id de la marca para filtrar' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  brand?: number;
 }

@@ -4,10 +4,11 @@ import { Roles } from 'src/common/utils/roles.decorator';
 import { RolesGuard } from 'src/common/utils/roles.guard';
 import { RolesEnum } from 'src/shared/enums/roles.enum';
 import { Public } from 'src/common/utils/public.decorator';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiCreatedResponse } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
+import { RegisterResponseDto } from '../dto/register-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -27,7 +28,8 @@ export class AuthController {
   @Post('register')
   @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Registrar nuevo usuario' })
-  @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente, devuelve token JWT' })
+  @ApiBody({ type: RegisterDto })
+  @ApiCreatedResponse({ description: 'Usuario registrado exitosamente, devuelve token JWT', type: RegisterResponseDto })
   @ApiResponse({ status: 400, description: 'Error en validación de datos' })
   async register(@Body() registerDto: RegisterDto) {
     return await this.authService.register(registerDto);

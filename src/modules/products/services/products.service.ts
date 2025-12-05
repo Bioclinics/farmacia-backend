@@ -23,6 +23,7 @@ export class ProductsService {
 
     const qb = this.repo.createQueryBuilder('p')
       .leftJoinAndSelect('p.productType', 'productType')
+      .leftJoinAndSelect('p.brand', 'brand')
       .where('p.is_deleted = false');
 
     if (params.name) {
@@ -31,6 +32,10 @@ export class ProductsService {
 
     if (params.type !== undefined) {
       qb.andWhere('p.id_type = :type', { type: params.type });
+    }
+
+    if (params.brand !== undefined) {
+      qb.andWhere('p.id_brand = :brand', { brand: params.brand });
     }
 
     if (params.isActive !== undefined) {
@@ -49,7 +54,7 @@ export class ProductsService {
   async findOne(id: number): Promise<Product> {
     const product = await this.repo.findOne({
       where: { id_product: id, is_deleted: false },
-      relations: ['productType'],
+      relations: ['productType', 'brand'],
     });
     if (!product) throw new NotFoundException(`Producto con id ${id} no encontrado`);
     return product;
@@ -59,6 +64,7 @@ export class ProductsService {
     const newProduct = this.repo.create({
       ...dto,
       id_type: dto.idType,
+      id_brand: dto.idBrand,
       is_active: dto.isActive ?? true,
       stock: dto.stock ?? 0,
       min_stock: dto.minStock ?? 0,
@@ -69,6 +75,7 @@ export class ProductsService {
   async update(id: number, dto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
     if (dto.idType !== undefined) product.id_type = dto.idType;
+    if (dto.idBrand !== undefined) product.id_brand = dto.idBrand;
     if (dto.name !== undefined) product.name = dto.name;
     if (dto.price !== undefined) product.price = dto.price;
     if (dto.stock !== undefined) product.stock = dto.stock;

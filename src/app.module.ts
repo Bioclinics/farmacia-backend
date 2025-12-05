@@ -13,6 +13,7 @@ import { SalesProcessModule } from './app/sales-process/sales-process.module';
 import { AuthModule } from './app/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { BrandsModule } from './modules/brands/brands.module';
 
 @Module({
 	imports: [
@@ -30,6 +31,7 @@ import { RolesModule } from './modules/roles/roles.module';
 		AuthModule,
 		UsersModule,
 		RolesModule,
+		BrandsModule,
 	],
 })
 export class AppModule { }

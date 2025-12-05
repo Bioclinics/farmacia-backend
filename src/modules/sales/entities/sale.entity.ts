@@ -19,4 +19,7 @@ export class Sale extends BaseEntity {
     @ManyToOne(() => User, { eager: true })
     @JoinColumn({ name: "id_user" })
     user: User;
+
+    @Column({ name: 'created_at', type: 'timestamp', default: () => 'NOW()' })
+    created_at: Date;
 }

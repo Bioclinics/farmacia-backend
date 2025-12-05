@@ -14,6 +14,9 @@ export class ProductInput {
     @Column({ name: "quantity", type: "int" })
     quantity: number;
 
+    @Column({ name: "units_per_box", type: "int" })
+    unitsPerBox: number;
+
     @Column({ name: "unit_cost", type: "decimal", precision: 12, scale: 2, nullable: true })
     unitCost: number;
 

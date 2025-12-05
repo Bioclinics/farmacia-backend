@@ -24,6 +24,7 @@ export class ProductsController {
   @ApiQuery({ name: 'name', required: false, description: 'Filtro por nombre (partial)' })
   @ApiQuery({ name: 'type', required: false, description: 'Filtro por id del tipo de producto' })
   @ApiQuery({ name: 'isActive', required: false, description: 'Filtrar por productos activos (true/false)' })
+  @ApiQuery({ name: 'brand', required: false, description: 'Filtro por id de marca' })
   @ApiResponse({ status: 200, description: 'Lista paginada de productos', type: PaginatedProductsDto })
   findAll(@Query() query: ProductsFilterDto) {
     return this.productsService.findAll(query);

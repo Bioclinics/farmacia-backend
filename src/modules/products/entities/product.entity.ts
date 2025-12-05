@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ProductType } from 'src/modules/product_types/entities/product_type.entity';
+import { Brand } from 'src/modules/brands/entities/brand.entity';
 
 @Entity('products')
 export class Product {
@@ -9,12 +10,19 @@ export class Product {
   @Column({ length: 200 })
   name: string;
 
-  @Column()
+  @Column({ name: 'id_type' })
   id_type: number;
 
   @ManyToOne(() => ProductType, (type) => type.products)
   @JoinColumn({ name: 'id_type' })
   productType: ProductType;
+
+  @Column({ name: 'id_brand' })
+  id_brand: number;
+
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn({ name: 'id_brand' })
+  brand: Brand;
 
   @Column({ type: 'numeric', precision: 12, scale: 2 })
   price: number;
