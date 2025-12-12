@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from "@nestjs/common";
 import { ProductInputsService } from "../services/product_inputs.service";
 import { CreateProductInputDto } from '../dto/create_product_input.dto';
 import { UpdateProductInputDto } from '../dto/update_product_input.dto';
@@ -6,6 +6,7 @@ import { UpdateProductInputDto } from '../dto/update_product_input.dto';
 import { Response } from "express";
 import { OkRes, CreatedRes } from "src/common/utils";
 import { ApiOperation } from "@nestjs/swagger";
+import { ProductInputFiltersDto } from "../dto/product-input-filters.dto";
 
 @Controller("product-inputs")
 export class ProductInputsController {
@@ -20,9 +21,9 @@ export class ProductInputsController {
 
   @Get()
   @ApiOperation({ summary: "Listar ingresos de productos" })
-  async findAll(@Res() res: Response) {
-    const inputs = await this.productInputsService.findAll();
-    return OkRes(res, { productInputs: inputs });
+  async findAll(@Query() filters: ProductInputFiltersDto, @Res() res: Response) {
+    const response = await this.productInputsService.findAll(filters);
+    return OkRes(res, response);
   }
 
   @Get(":id")
