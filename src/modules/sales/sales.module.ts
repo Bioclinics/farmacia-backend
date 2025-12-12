@@ -4,10 +4,12 @@ import { SalesService } from "./services/sales.service";
 import { SalesController } from "./api/sales.controller";
 import { Sale } from "./entities/sale.entity";
 import { ProductOutputsModule } from "../product_outputs/product_outputs.module";
+import { ProductOutput } from "../product_outputs/entities/product_output.entity";
+import { Product } from "../products/entities/product.entity";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Sale]),
+        TypeOrmModule.forFeature([Sale, ProductOutput, Product]),
         ProductOutputsModule,
     ],
     controllers: [SalesController],

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Inject, Query } from "@nestjs/common";
+import { Controller, Get, Post, Body, Query } from "@nestjs/common";
 import { UseGuards } from '@nestjs/common';
 import { Roles } from 'src/common/utils/roles.decorator';
 import { RolesGuard } from 'src/common/utils/roles.guard';
@@ -8,6 +8,7 @@ import { DataSource } from "typeorm";
 import { SalesService } from "../services/sales.service";
 import { ProductOutputsService } from "src/modules/product_outputs/services/product_outputs.service";
 import { Sale } from "../entities/sale.entity";
+import { SalesReportFilterDto } from "../dto/sales-report-filter.dto";
 
 @ApiTags('Sales')
 @Controller("sales")
@@ -27,6 +28,14 @@ export class SalesController {
         const filters: any = {}
         if (date) filters.date = date
         return await this.salesService.findAll(filters);
+    }
+
+    @Get('report')
+    @Roles(RolesEnum.STAFF, RolesEnum.ADMIN)
+    @ApiOperation({ summary: 'Reporte detallado de ventas con métricas y filtros' })
+    @ApiResponse({ status: 200, description: 'Reporte de ventas con métricas y paginación' })
+    async report(@Query() filters: SalesReportFilterDto) {
+        return await this.salesService.getReport(filters);
     }
 
     @Post()
