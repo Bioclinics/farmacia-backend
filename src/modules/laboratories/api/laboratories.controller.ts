@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, Put, UseGuards, Req } from '@nestjs/common';
 import { Roles } from 'src/common/utils/roles.decorator';
 import { RolesGuard } from 'src/common/utils/roles.guard';
 import { RolesEnum } from 'src/shared/enums/roles.enum';
@@ -7,6 +7,8 @@ import { CreateLaboratoryDto } from '../dto/inputs/create-laboratory.dto';
 import { UpdateLaboratoryDto } from '../dto/inputs/update-laboratory.dto';
 import { Response } from 'express';
 import { CreatedRes, OkRes, SwaggerBadRequestCommon, SwaggerNotFoundCommon } from 'src/common/utils';
+import { AuditLogsService } from 'src/modules/audit_logs/services/audit_logs.service';
+import { Request } from 'express';
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProperty } from '@nestjs/swagger';
 import { FindAllLaboratoryParamsDto } from '../dto/inputs/find-all-laboratory-params.dto';
 import { CommonResponseDto } from 'src/shared/dto/common-response.dto';
@@ -16,7 +18,10 @@ import { FindOnelaboratoryResponse } from '../dto/outputs/find-one-laboratory-re
 @Controller('laboratories')
 @UseGuards(RolesGuard)
 export class LaboratoriesController {
-	constructor(private readonly laboratoriesService: LaboratoriesService) { }
+	constructor(
+		private readonly laboratoriesService: LaboratoriesService,
+		private readonly auditLogsService: AuditLogsService,
+	) { }
 
 	@Post()
 	@Roles(RolesEnum.ADMIN)
@@ -28,11 +33,23 @@ export class LaboratoriesController {
 		type: CommonResponseDto
 	})
 	@ApiBadRequestResponse(SwaggerBadRequestCommon())
-	async create(@Body() data: CreateLaboratoryDto,@Res() res: Response) {
-		const laboratory = await this.laboratoriesService.create(data);
-		return CreatedRes(res,{
-			message: 'Se creo el laboratorio'
-		})
+		async create(@Body() data: CreateLaboratoryDto,@Res() res: Response, @Req() req: Request) {
+			const laboratory = await this.laboratoriesService.create(data);
+			const actorId = (req as any).user?.id;
+			if (actorId) {
+				await this.auditLogsService.record({
+					actorId,
+					action: 'Crear laboratorio',
+					tableName: 'laboratories',
+					recordId: (laboratory as any).id_laboratory ?? (laboratory as any).id,
+					description: `Creó el laboratorio ${(laboratory as any).name ?? ''}`,
+					newData: { id: (laboratory as any).id_laboratory ?? (laboratory as any).id, name: (laboratory as any).name },
+					request: req,
+				});
+			}
+			return CreatedRes(res,{
+				message: 'Se creo el laboratorio'
+			})
 	}
 
 	@Get()
@@ -90,11 +107,25 @@ export class LaboratoriesController {
 		name: 'idLaboratory',
 		description: 'Id del laboratorio a actualizar'
 	})
-	async update(@Param('idLaboratory') idLaboratory: number, @Body() data: UpdateLaboratoryDto,@Res() res: Response) {
-		const laboratory = await this.laboratoriesService.update(idLaboratory,data);
-		return OkRes(res,{
-			message: 'Se actualizo el laboratorio'
-		});
+		async update(@Param('idLaboratory') idLaboratory: number, @Body() data: UpdateLaboratoryDto,@Res() res: Response, @Req() req: Request) {
+			const before = await this.laboratoriesService.findOne(idLaboratory);
+			const laboratory = await this.laboratoriesService.update(idLaboratory,data);
+			const actorId = (req as any).user?.id;
+			if (actorId) {
+				await this.auditLogsService.record({
+					actorId,
+					action: 'Editar laboratorio',
+					tableName: 'laboratories',
+					recordId: (laboratory as any).id_laboratory ?? (laboratory as any).id,
+					description: `Actualizó el laboratorio ${(laboratory as any).name ?? ''}`,
+					oldData: { id: (before as any).id_laboratory ?? (before as any).id, name: (before as any).name },
+					newData: { id: (laboratory as any).id_laboratory ?? (laboratory as any).id, name: (laboratory as any).name },
+					request: req,
+				});
+			}
+			return OkRes(res,{
+				message: 'Se actualizo el laboratorio'
+			});
 	}
 
 	@Delete(':idLaboratory')
@@ -112,10 +143,23 @@ export class LaboratoriesController {
 		name: 'idLaboratory',
 		description: 'Id del laboratorio a eliminar'
 	})
-	async remove(@Param('idLaboratory') idLaboratory: number,@Res() res: Response) {
-		const response = await this.laboratoriesService.remove(idLaboratory);
-		return OkRes(res,{
-			message: 'Laboratorio eliminado'
-		})
+		async remove(@Param('idLaboratory') idLaboratory: number,@Res() res: Response, @Req() req: Request) {
+			const before = await this.laboratoriesService.findOne(idLaboratory);
+			const response = await this.laboratoriesService.remove(idLaboratory);
+			const actorId = (req as any).user?.id;
+			if (actorId) {
+				await this.auditLogsService.record({
+					actorId,
+					action: 'Eliminar laboratorio',
+					tableName: 'laboratories',
+					recordId: (before as any).id_laboratory ?? (before as any).id,
+					description: `Eliminó el laboratorio ${(before as any).name ?? ''}`,
+					oldData: { id: (before as any).id_laboratory ?? (before as any).id, name: (before as any).name },
+					request: req,
+				});
+			}
+			return OkRes(res,{
+				message: 'Laboratorio eliminado'
+			})
 	}
 }

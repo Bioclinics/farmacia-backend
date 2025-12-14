@@ -4,9 +4,10 @@ import { ProductInput } from "./entities/product_input.entity";
 import { ProductInputsService } from "./services/product_inputs.service";
 import { ProductInputsController } from "./api/product_inputs.controller";
 import { ProductOutput } from "../product_outputs/entities/product_output.entity";
+import { AuditLogsModule } from "../audit_logs/audit_logs.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([ProductInput, ProductOutput])],
+    imports: [TypeOrmModule.forFeature([ProductInput, ProductOutput]), AuditLogsModule],
     controllers: [ProductInputsController],
     providers: [ProductInputsService]
 })

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from "@nestjs/common";
+import { Controller, Get, Post, Body, Query, Req } from "@nestjs/common";
 import { UseGuards } from '@nestjs/common';
 import { Roles } from 'src/common/utils/roles.decorator';
 import { RolesGuard } from 'src/common/utils/roles.guard';
@@ -9,6 +9,8 @@ import { SalesService } from "../services/sales.service";
 import { ProductOutputsService } from "src/modules/product_outputs/services/product_outputs.service";
 import { Sale } from "../entities/sale.entity";
 import { SalesReportFilterDto } from "../dto/sales-report-filter.dto";
+import { AuditLogsService } from "src/modules/audit_logs/services/audit_logs.service";
+import { Request } from "express";
 
 @ApiTags('Sales')
 @Controller("sales")
@@ -18,7 +20,26 @@ export class SalesController {
         private readonly salesService: SalesService,
         private readonly productOutputsService: ProductOutputsService,
         private readonly dataSource: DataSource,
+        private readonly auditLogsService: AuditLogsService,
     ) {}
+
+    private buildSaleLogPayload(sale: Sale, items?: any[]) {
+        return {
+            id: Number(sale.id),
+            total: Number(sale.total),
+            notes: sale.notes ?? null,
+            idUser: sale.idUser ?? (sale as any).id_user ?? null,
+            createdAt: sale.created_at ?? (sale as any)?.createdAt ?? new Date(),
+            items: Array.isArray(items)
+                ? items.map((item) => ({
+                    productId: item.idProduct ?? item.id_product,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice ?? item.unit_price,
+                    subtotal: item.subtotal,
+                  }))
+                : undefined,
+        };
+    }
 
     @Get()
     @Roles(RolesEnum.STAFF, RolesEnum.ADMIN)
@@ -42,7 +63,7 @@ export class SalesController {
     @ApiOperation({ summary: 'Crear una nueva venta con productos (outputs)' })
     @ApiResponse({ status: 201, description: 'Venta creada con outputs', type: Sale })
     @Roles(RolesEnum.STAFF, RolesEnum.ADMIN)
-    async create(@Body() payload: { idUser: number; total: number; notes?: string; items?: any[] }): Promise<any> {
+    async create(@Body() payload: { idUser: number; total: number; notes?: string; items?: any[] }, @Req() req: Request): Promise<any> {
         // Use transaction to ensure consistency
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -66,11 +87,35 @@ export class SalesController {
                     queryRunner.manager
                 );
                 console.log('[SalesController] Outputs created:', outputs)
+                const actorId = (req as any).user?.id ?? payload.idUser;
+                if (actorId) {
+                    await this.auditLogsService.record({
+                        actorId,
+                        action: 'Crear venta',
+                        tableName: 'sales',
+                        recordId: Number(sale.id),
+                        description: `Registró venta #${sale.id} con ${outputs.length} productos`,
+                        newData: this.buildSaleLogPayload(sale, outputs),
+                        request: req,
+                    });
+                }
                 await queryRunner.commitTransaction();
                 return { sale, outputs };
             }
 
             await queryRunner.commitTransaction();
+            const actorId = (req as any).user?.id ?? payload.idUser;
+            if (actorId) {
+                await this.auditLogsService.record({
+                    actorId,
+                    action: 'Crear venta',
+                    tableName: 'sales',
+                    recordId: Number(sale.id),
+                    description: `Registró venta #${sale.id}`,
+                    newData: this.buildSaleLogPayload(sale),
+                    request: req,
+                });
+            }
             return { sale };
         } catch (error) {
             await queryRunner.rollbackTransaction();

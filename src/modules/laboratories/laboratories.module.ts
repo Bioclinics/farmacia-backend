@@ -4,11 +4,13 @@ import { LaboratoriesController } from './api/laboratories.controller';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Laboratory } from './entities/laboratory.entity';
+import { AuditLogsModule } from '../audit_logs/audit_logs.module';
 
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Laboratory])
+		TypeOrmModule.forFeature([Laboratory]),
+		AuditLogsModule,
 	],
 	
 	controllers: [LaboratoriesController],

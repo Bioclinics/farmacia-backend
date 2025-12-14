@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, EntityManager, SelectQueryBuilder } from 'typeorm';
 import { ProductOutput } from '../entities/product_output.entity';
@@ -375,6 +375,15 @@ export class ProductOutputsService {
       const idProduct = o.id_product ?? o.idProduct ?? o.idProduct;
       const unitPrice = o.unit_price ?? o.unitPrice ?? o.unit_price;
       const isAdjustment = o.is_adjustment ?? o.isAdjustment ?? false;
+
+      // Validate product existence and active status before creating output
+      const product = await productRepo.findOneBy({ id_product: idProduct });
+      if (!product) {
+        throw new NotFoundException(`Producto con id ${idProduct} no encontrado`);
+      }
+      if (product.is_active === false) {
+        throw new BadRequestException(`Producto "${product.name}" (id ${idProduct}) está desactivado y no puede venderse`);
+      }
 
       const toCreate = repo.create({
         id_sale: saleId,

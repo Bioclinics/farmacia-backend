@@ -14,6 +14,7 @@ import { AuthModule } from './app/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { BrandsModule } from './modules/brands/brands.module';
+import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
 
 @Module({
 	imports: [
@@ -32,6 +33,7 @@ import { BrandsModule } from './modules/brands/brands.module';
 		UsersModule,
 		RolesModule,
 		BrandsModule,
+		AuditLogsModule,
 	],
 })
 export class AppModule { }
