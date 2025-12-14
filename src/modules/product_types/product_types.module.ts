@@ -3,10 +3,11 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ProductTypesController } from "./api/product_types.controller";
 import { ProductTypesService } from "./services/product_types.service";
 import { ProductType } from "./entities/product_type.entity";
+import { ProductSubtype } from "./entities/product_subtype.entity";
 import { AuditLogsModule } from "../audit_logs/audit_logs.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductType]), AuditLogsModule],
+  imports: [TypeOrmModule.forFeature([ProductType, ProductSubtype]), AuditLogsModule],
   controllers: [ProductTypesController],
   providers: [ProductTypesService],
   exports: [ProductTypesService]

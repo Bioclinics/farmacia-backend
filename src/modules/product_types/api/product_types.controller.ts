@@ -23,6 +23,15 @@ export class ProductTypesController {
     return this.service.findAll();
   }
 
+  @Get(":id/subtypes")
+  findSubtypes(@Param("id") id: string) {
+    const parsedId = Number(id);
+    if (isNaN(parsedId)) {
+      throw new BadRequestException("ID inválido");
+    }
+    return this.service.findSubtypesByType(parsedId);
+  }
+
   // GET /product-types/:id
   @Get(":id")
   findOne(@Param("id") id: string) {

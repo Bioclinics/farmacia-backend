@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Product } from 'src/modules/products/entities/product.entity';
+import { ProductSubtype } from './product_subtype.entity';
 
 @Entity('product_types')
 export class ProductType {
@@ -9,8 +10,8 @@ export class ProductType {
   @Column({ length: 100 })
   name: string;
 
-  @Column({ length: 200, nullable: true })
-  description: string;
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  description: string | null;
 
   @Column({ default: true })
   is_active: boolean;
@@ -26,4 +27,7 @@ export class ProductType {
 
   @OneToMany(() => Product, (product) => product.productType)
   products: Product[];
+
+  @OneToMany(() => ProductSubtype, (subtype) => subtype.type)
+  subtypes: ProductSubtype[];
 }

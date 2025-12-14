@@ -24,6 +24,16 @@ export class ProductsController {
 
   private sanitizeProduct(product: any): Record<string, unknown> {
     if (!product) return {};
+    const compositions = Array.isArray(product.productCompositions)
+      ? product.productCompositions
+          .map((pc: any) => ({
+            compositionId: Number(pc.id_composition ?? pc.idComposition ?? 0),
+            compositionName: pc.composition?.name ?? null,
+            concentration: pc.concentration ?? null,
+          }))
+          .filter((item) => item.compositionId > 0)
+      : [];
+
     return {
       id: Number(product.id_product ?? product.id ?? product.idProduct ?? 0),
       name: product.name,
@@ -34,6 +44,14 @@ export class ProductsController {
       isDeleted: Boolean(product.is_deleted ?? product.isDeleted ?? false),
       idType: Number(product.id_type ?? product.idType ?? 0),
       idBrand: Number(product.id_brand ?? product.idBrand ?? 0),
+      idLaboratory: Number(product.id_laboratory ?? product.idLaboratory ?? 0),
+      idSubtype: product.id_subtype ? Number(product.id_subtype) : null,
+      laboratoryName: product.laboratory?.name ?? null,
+      subtypeName: product.subtype?.name ?? null,
+      typeName: product.productType?.name ?? null,
+      brandName: product.brand?.name ?? null,
+      compositionsCount: compositions.length,
+      compositions,
     };
   }
 
@@ -45,7 +63,14 @@ export class ProductsController {
     if (typeof dto.minStock !== 'undefined' && Number(dto.minStock) !== Number(previous.min_stock)) changes.push('minStock');
     if (typeof dto.idBrand !== 'undefined' && dto.idBrand !== previous.id_brand) changes.push('brand');
     if (typeof dto.idType !== 'undefined' && dto.idType !== previous.id_type) changes.push('type');
+    if (typeof dto.idLaboratory !== 'undefined' && dto.idLaboratory !== previous.id_laboratory) changes.push('laboratory');
+    if (typeof dto.idSubtype !== 'undefined') {
+      const prevSubtype = previous.id_subtype ?? null;
+      const nextSubtype = dto.idSubtype ?? null;
+      if (prevSubtype !== nextSubtype) changes.push('subtype');
+    }
     if (typeof dto.isActive !== 'undefined' && Boolean(dto.isActive) !== Boolean(previous.is_active)) changes.push('status');
+    if (Object.prototype.hasOwnProperty.call(dto, 'compositions')) changes.push('compositions');
     return changes;
   }
 
@@ -68,6 +93,23 @@ export class ProductsController {
   @ApiQuery({ name: 'type', required: false, description: 'Filtro por id del tipo de producto' })
   @ApiQuery({ name: 'isActive', required: false, description: 'Filtrar por productos activos (true/false)' })
   @ApiQuery({ name: 'brand', required: false, description: 'Filtro por id de marca' })
+  @ApiQuery({ name: 'laboratory', required: false, description: 'Filtro por id de laboratorio' })
+  @ApiQuery({ name: 'subtype', required: false, description: 'Filtro por id de subtipo de producto' })
+  @ApiQuery({
+    name: 'compositionIds',
+    required: false,
+    description: 'IDs de principios activos (separados por coma o múltiples parámetros)',
+  })
+  @ApiQuery({
+    name: 'isCombined',
+    required: false,
+    description: 'Filtrar por productos combinados (true/false)',
+  })
+  @ApiQuery({
+    name: 'concentration',
+    required: false,
+    description: 'Filtro por concentración de principios activos',
+  })
   @ApiResponse({ status: 200, description: 'Lista paginada de productos', type: PaginatedProductsDto })
   findAll(@Query() query: ProductsFilterDto) {
     return this.productsService.findAll(query);
