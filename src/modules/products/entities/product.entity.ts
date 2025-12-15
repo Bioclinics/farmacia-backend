@@ -43,6 +43,9 @@ export class Product {
   @Column({ type: 'integer', default: 0 })
   min_stock: number;
 
+  @Column({ name: 'units_per_package', type: 'integer', default: 1 })
+  units_per_package: number;
+
   @Column({ default: true })
   is_active: boolean;
 

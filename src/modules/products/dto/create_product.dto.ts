@@ -72,6 +72,13 @@ export class CreateProductDto {
   @IsBoolean()
   isActive?: boolean;
 
+  @ApiPropertyOptional({ description: 'Unidades por paquete', example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  unitsPerPackage?: number;
+
   @ApiPropertyOptional({
     description: 'Principios activos asociados al producto',
     type: [CreateProductCompositionItemDto],

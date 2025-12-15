@@ -187,6 +187,12 @@ export class ProductsService {
     const productType = await this.ensureProductType(dto.idType);
     const laboratory = await this.ensureLaboratory(dto.idLaboratory);
 
+    // Normalizar units_per_package (null, undefined o < 1 => 1)
+    let unitsPerPackage = Number(dto.unitsPerPackage);
+    if (!Number.isFinite(unitsPerPackage) || unitsPerPackage < 1) {
+      unitsPerPackage = 1;
+    }
+
     let subtypeId: number | null = null;
     const requiresSubtype = await this.typeRequiresSubtype(productType.id_type);
     if (requiresSubtype) {
@@ -205,6 +211,7 @@ export class ProductsService {
       price: dto.price,
       stock: dto.stock ?? 0,
       min_stock: dto.minStock ?? 0,
+      units_per_package: unitsPerPackage,
       id_type: productType.id_type,
       id_brand: dto.idBrand,
       id_laboratory: laboratory.id,
@@ -270,6 +277,15 @@ export class ProductsService {
     product.id_laboratory = laboratory.id;
     product.id_subtype = subtypeId;
     product.updated_at = new Date();
+
+    // Normalizar units_per_package en updates (null, undefined o < 1 => 1)
+    if (dto.unitsPerPackage !== undefined) {
+      let unitsPerPackage = Number(dto.unitsPerPackage);
+      if (!Number.isFinite(unitsPerPackage) || unitsPerPackage < 1) {
+        unitsPerPackage = 1;
+      }
+      (product as any).units_per_package = unitsPerPackage;
+    }
 
     await this.repo.save(product);
 
