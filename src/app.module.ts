@@ -16,6 +16,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
 import { CompositionsModule } from './modules/compositions/compositions.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
 	imports: [
@@ -36,6 +37,7 @@ import { CompositionsModule } from './modules/compositions/compositions.module';
 		BrandsModule,
 		AuditLogsModule,
 		CompositionsModule,
+		DashboardModule,
 	],
 })
 export class AppModule { }
