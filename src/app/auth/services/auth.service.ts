@@ -15,7 +15,7 @@ export class AuthService {
   async register(registerDto: RegisterDto): Promise<{ user: User; access_token: string }> {
     const user = await this.usersService.create(registerDto);
     const access_token = this.jwtService.sign(
-      { id: user.id, username: user.username, idRole: user.idRole },
+      { id: user.id, username: user.username, idRole: Number(user.idRole) },
       { expiresIn: '24h' },
     );
 
@@ -43,7 +43,7 @@ export class AuthService {
     }
 
     const access_token = this.jwtService.sign(
-      { id: user.id, username: user.username, idRole: user.idRole },
+      { id: user.id, username: user.username, idRole: Number(user.idRole) },
       { expiresIn: '24h' },
     );
 

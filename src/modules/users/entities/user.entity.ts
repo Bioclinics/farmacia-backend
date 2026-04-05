@@ -7,7 +7,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn({ name: 'id_user', type: 'bigint' })
   id: number;
 
-  @Column({ name: 'id_role', type: 'int', nullable: false })
+  @Column({ name: 'id_role', type: 'int', nullable: false, default: 2 })
   idRole: number;
 
   @Column({ name: 'name', type: 'varchar', length: 150, nullable: false })
