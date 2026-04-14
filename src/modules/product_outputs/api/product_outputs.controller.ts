@@ -19,9 +19,22 @@ export class ProductOutputsController {
   constructor(private readonly productOutputsService: ProductOutputsService) {}
 
   @Get()
-  findAll(@Query('saleId') saleId?: string) {
+  findAll(
+    @Query('saleId') saleId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('productId') productId?: string,
+    @Query('laboratoryId') laboratoryId?: string,
+    @Query('userId') userId?: string,
+  ) {
     if (saleId) return this.productOutputsService.findBySale(Number(saleId))
-    return this.productOutputsService.findAll();
+    return this.productOutputsService.findAllWithFilters({
+      startDate,
+      endDate,
+      productId: productId ? Number(productId) : undefined,
+      laboratoryId: laboratoryId ? Number(laboratoryId) : undefined,
+      userId: userId ? Number(userId) : undefined,
+    });
   }
 
   @Post()

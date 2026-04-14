@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Inject, Query } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Post, Body, Inject, Query } from "@nestjs/common";
 import { UseGuards } from '@nestjs/common';
 import { Roles } from 'src/common/utils/roles.decorator';
 import { RolesGuard } from 'src/common/utils/roles.guard';
@@ -257,6 +257,10 @@ export class SalesController {
             return { sale };
         } catch (error) {
             await queryRunner.rollbackTransaction();
+            const rawMessage = String((error as any)?.message ?? '').toLowerCase();
+            if (rawMessage.includes('stock') || rawMessage.includes('insuficiente') || rawMessage.includes('out of stock')) {
+                throw new BadRequestException((error as any)?.message || 'Stock insuficiente para completar la venta');
+            }
             throw error;
         } finally {
             await queryRunner.release();

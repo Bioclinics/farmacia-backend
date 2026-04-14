@@ -12,6 +12,11 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  private sanitizeUser(user: User): Omit<User, 'password'> {
+    const { password, ...safeUser } = user;
+    return safeUser;
+  }
+
   async register(registerDto: RegisterDto): Promise<{ user: User; access_token: string }> {
     const user = await this.usersService.create(registerDto);
     const access_token = this.jwtService.sign(
@@ -19,11 +24,12 @@ export class AuthService {
       { expiresIn: '24h' },
     );
 
-    return { user, access_token };
+    return { user: this.sanitizeUser(user) as User, access_token };
   }
 
   async login(loginDto: LoginDto): Promise<{ user: User; access_token: string }> {
-    const user = await this.usersService.findByUsername(loginDto.username);
+    const username = loginDto.username.trim();
+    const user = await this.usersService.findByUsername(username);
 
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -47,7 +53,7 @@ export class AuthService {
       { expiresIn: '24h' },
     );
 
-    return { user, access_token };
+    return { user: this.sanitizeUser(user) as User, access_token };
   }
 
   async validateToken(token: string): Promise<any> {

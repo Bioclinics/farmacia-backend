@@ -68,10 +68,12 @@ export class UsersService {
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return await this.usersRepository.findOne({
-      where: { username, isDeleted: false },
-      relations: ['role'],
-    });
+    return await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('LOWER(user.username) = LOWER(:username)', { username: username.trim() })
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: false })
+      .getOne();
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
