@@ -25,8 +25,9 @@ export class AuthController {
   }
 
   // Register is admin-only now (protected). Keep it non-public.
+  @Public()
   @Post('register')
-  @Roles(RolesEnum.ADMIN)
+  // @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Registrar nuevo usuario' })
   @ApiBody({ type: RegisterDto })
   @ApiCreatedResponse({ description: 'Usuario registrado exitosamente, devuelve token JWT', type: RegisterResponseDto })

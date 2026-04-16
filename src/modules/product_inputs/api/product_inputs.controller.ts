@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from "@nestjs/common";
 import { ProductInputsService } from "../services/product_inputs.service";
 import { CreateProductInputDto } from '../dto/create_product_input.dto';
 import { UpdateProductInputDto } from '../dto/update_product_input.dto';
@@ -19,10 +19,24 @@ export class ProductInputsController {
   }
 
   @Get()
-  @ApiOperation({ summary: "Listar ingresos de productos" })
-  async findAll(@Res() res: Response) {
-    const inputs = await this.productInputsService.findAll();
-    return OkRes(res, { productInputs: inputs });
+  @ApiOperation({ summary: "Listar ingresos de productos con filtros opcionales" })
+  async findAll(
+    @Res() res: Response,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('productId') productId?: string,
+    @Query('laboratoryId') laboratoryId?: string,
+    @Query('isAdjustment') isAdjustment?: string,
+  ) {
+    const filters: any = {};
+    if (startDate) filters.startDate = startDate;
+    if (endDate) filters.endDate = endDate;
+    if (productId) filters.productId = Number(productId);
+    if (laboratoryId) filters.laboratoryId = Number(laboratoryId);
+    if (typeof isAdjustment !== 'undefined') filters.isAdjustment = isAdjustment === 'true';
+
+    const result = await this.productInputsService.findAll(filters);
+    return OkRes(res, result);
   }
 
   @Get(":id")

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
 import { Roles } from 'src/common/utils/roles.decorator';
 import { RolesGuard } from 'src/common/utils/roles.guard';
 import { RolesEnum } from 'src/shared/enums/roles.enum';
@@ -38,8 +38,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Obtener un usuario por ID' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario encontrado', type: User })
-  async findOne(@Param('id') id: string) {
-    return await this.usersService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.usersService.findOne(id);
   }
 
   @Patch(':id')
@@ -47,8 +47,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Actualizar un usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario actualizado', type: User })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.usersService.update(+id, updateUserDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
@@ -56,21 +56,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Eliminar (marcar como eliminado) un usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado' })
-  async remove(@Param('id') id: string) {
-    return await this.usersService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.usersService.remove(id);
   }
 
   @Patch(':id/activate')
   @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Activar un usuario' })
-  async activate(@Param('id') id: string) {
-    return await this.usersService.setActive(+id, true);
+  async activate(@Param('id', ParseIntPipe) id: number) {
+    return await this.usersService.setActive(id, true);
   }
 
   @Patch(':id/deactivate')
   @Roles(RolesEnum.ADMIN)
   @ApiOperation({ summary: 'Desactivar un usuario' })
-  async deactivate(@Param('id') id: string) {
-    return await this.usersService.setActive(+id, false);
+  async deactivate(@Param('id', ParseIntPipe) id: number) {
+    return await this.usersService.setActive(id, false);
   }
 }

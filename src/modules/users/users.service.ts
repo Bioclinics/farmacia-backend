@@ -28,7 +28,9 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    return await this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    delete (saved as any).password;
+    return saved;
   }
 
   async findAll(filters?: { name?: string; isActive?: boolean }): Promise<User[]> {
@@ -54,11 +56,17 @@ export class UsersService {
     return await this.usersRepository.save(user);
   }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.usersRepository.findOne({
-      where: { id, isDeleted: false },
-      relations: ['role'],
-    });
+  async findOne(id: number, includePassword = false): Promise<User> {
+    const qb = this.usersRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('user.id = :id', { id })
+      .andWhere('user.isDeleted = :isDeleted', { isDeleted: false });
+
+    if (includePassword) {
+      qb.addSelect('user.password');
+    }
+
+    const user = await qb.getOne();
 
     if (!user) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -70,6 +78,7 @@ export class UsersService {
   async findByUsername(username: string): Promise<User | null> {
     return await this.usersRepository
       .createQueryBuilder('user')
+      .addSelect('user.password')
       .leftJoinAndSelect('user.role', 'role')
       .where('LOWER(user.username) = LOWER(:username)', { username: username.trim() })
       .andWhere('user.isDeleted = :isDeleted', { isDeleted: false })
@@ -77,7 +86,7 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.findOne(id, true);
 
     if (updateUserDto.username && updateUserDto.username !== user.username) {
       const existingUser = await this.usersRepository.findOne({
@@ -99,6 +108,7 @@ export class UsersService {
       password: passwordToUpdate || user.password,
     });
 
+    delete (updatedUser as any).password;
     return updatedUser;
   }
 

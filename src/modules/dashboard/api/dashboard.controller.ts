@@ -29,15 +29,6 @@ export class DashboardController {
     return this.dashboardService.getTopProducts(startDate, endDate, Number(limit ?? 5));
   }
 
-  @Get('top-actives')
-  getTopActives(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.dashboardService.getTopActives(startDate, endDate, Number(limit ?? 5));
-  }
-
   @Get('inventory-movements')
   getInventoryMovements(@Query('date') date?: string, @Query('limit') limit?: string) {
     return this.dashboardService.getInventoryMovements(date, Number(limit ?? 15));

@@ -132,15 +132,6 @@ export class DashboardService {
     );
   }
 
-  async getTopActives(startDate?: string, endDate?: string, limit = 5) {
-    const topProducts = await this.getTopProducts(startDate, endDate, limit);
-    return topProducts.map((item: any) => ({
-      compositionId: Number(item.productId),
-      name: item.name,
-      quantity: Number(item.quantity),
-    }));
-  }
-
   async getInventoryMovements(date?: string, limit = 15) {
     const { start, end } = this.getDayBounds(date);
     const safeLimit = this.parseLimit(limit, 15);

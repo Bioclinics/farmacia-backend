@@ -73,8 +73,7 @@ export class AuditLogsService {
     }
 
     if (params.endDate) {
-      const endDate = new Date(params.endDate);
-      query.andWhere('audit_log.created_at <= :endDate', { endDate });
+      query.andWhere('audit_log.created_at <= :endDate', { endDate: `${params.endDate} 23:59:59.999` });
     }
 
     if (params.userId) {

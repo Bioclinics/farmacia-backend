@@ -15,7 +15,6 @@ import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
-import { CompositionsModule } from './modules/compositions/compositions.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 
 @Module({
@@ -36,7 +35,6 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 		RolesModule,
 		BrandsModule,
 		DashboardModule,
-		CompositionsModule,
 		AuditLogsModule,
 	],
 })

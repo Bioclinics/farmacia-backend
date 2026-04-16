@@ -232,7 +232,6 @@ export class SalesController {
         await queryRunner.startTransaction();
 
         try {
-                console.log('[SalesController] Received payload for create:', JSON.stringify(payload, null, 2))
             // Create sale
             const sale = await this.salesService.create({
                 idUser: payload.idUser,
@@ -242,13 +241,11 @@ export class SalesController {
 
             // Create product outputs if provided
             if (payload.items && Array.isArray(payload.items) && payload.items.length > 0) {
-                console.log('[SalesController] Creating outputs for sale id:', sale.id, 'items:', payload.items)
                 const outputs = await this.productOutputsService.createManyForSale(
                     sale.id,
                     payload.items,
                     queryRunner.manager
                 );
-                console.log('[SalesController] Outputs created:', outputs)
                 await queryRunner.commitTransaction();
                 return { sale, outputs };
             }

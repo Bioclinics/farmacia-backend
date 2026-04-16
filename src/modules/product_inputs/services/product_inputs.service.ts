@@ -45,9 +45,22 @@ export class ProductInputsService {
     });
   }
 
-  async findAll(): Promise<ProductInput[]> {
+  async findAll(filters: {
+    startDate?: string;
+    endDate?: string;
+    productId?: number;
+    laboratoryId?: number;
+    isAdjustment?: boolean;
+  } = {}): Promise<{
+    data: any[];
+    summary: {
+      period: { startDate: string | null; endDate: string | null };
+      entries: { count: number; totalBoxes: number; totalUnits: number; totalSubtotal: number };
+      outputs: { count: number; totalQuantity: number; totalSubtotal: number };
+    };
+  }> {
     // Enrich product inputs with product and laboratory info, ordered newest first
-    const rows = await this.productInputsRepository.createQueryBuilder('i')
+    const qb = this.productInputsRepository.createQueryBuilder('i')
       .leftJoin(Product, 'p', 'p.id_product = i.idProduct')
       .leftJoin(Laboratory, 'l', 'l.id_laboratory = i.idLaboratory')
       .select([
@@ -68,10 +81,64 @@ export class ProductInputsService {
         'l.id_laboratory AS lab_id',
         'l.name AS lab_name',
       ])
-      .orderBy('i.createdAt', 'DESC')
-      .getRawMany();
+      .orderBy('i.createdAt', 'DESC');
 
-    return rows.map(r => ({
+    if (filters.startDate) {
+      qb.andWhere('i.createdAt >= :startDate', { startDate: `${filters.startDate} 00:00:00` });
+    }
+    if (filters.endDate) {
+      qb.andWhere('i.createdAt <= :endDate', { endDate: `${filters.endDate} 23:59:59.999` });
+    }
+    if (filters.productId) {
+      qb.andWhere('i.idProduct = :productId', { productId: filters.productId });
+    }
+    if (filters.laboratoryId) {
+      qb.andWhere('i.idLaboratory = :laboratoryId', { laboratoryId: filters.laboratoryId });
+    }
+    if (typeof filters.isAdjustment === 'boolean') {
+      qb.andWhere('i.isAdjustment = :isAdjustment', { isAdjustment: filters.isAdjustment });
+    }
+
+    const rows = await qb.getRawMany();
+
+    const totalBoxes = rows.reduce((acc, r) => acc + Number(r.quantity ?? 0), 0);
+    const totalUnits = rows.reduce((acc, r) => acc + Number(r.quantity ?? 0) * Number(r.units_per_box ?? 1), 0);
+    const totalSubtotal = rows.reduce((acc, r) => acc + Number(r.subtotal ?? 0), 0);
+
+    // Build outputs summary using raw query with same filters
+    const outputsParams: any[] = [];
+    const outputsWhere: string[] = [];
+    if (filters.startDate) {
+      outputsParams.push(`${filters.startDate} 00:00:00`);
+      outputsWhere.push(`po.created_at >= $${outputsParams.length}`);
+    }
+    if (filters.endDate) {
+      outputsParams.push(`${filters.endDate} 23:59:59.999`);
+      outputsWhere.push(`po.created_at <= $${outputsParams.length}`);
+    }
+    if (filters.productId) {
+      outputsParams.push(filters.productId);
+      outputsWhere.push(`po.id_product = $${outputsParams.length}`);
+    }
+    if (filters.laboratoryId) {
+      outputsParams.push(filters.laboratoryId);
+      outputsWhere.push(`p.id_brand = $${outputsParams.length}`);
+    }
+    const outputsWhereSql = outputsWhere.length ? `WHERE ${outputsWhere.join(' AND ')}` : '';
+
+    const outputsSummaryRows = await this.dataSource.query(
+      `SELECT
+          COUNT(*)::int AS count,
+          COALESCE(SUM(po.quantity), 0)::int AS total_quantity,
+          COALESCE(SUM(po.subtotal), 0)::float AS total_subtotal
+       FROM product_outputs po
+       LEFT JOIN products p ON p.id_product = po.id_product
+       ${outputsWhereSql}`,
+      outputsParams,
+    );
+    const outputsSummary = outputsSummaryRows[0] ?? { count: 0, total_quantity: 0, total_subtotal: 0 };
+
+    const data = rows.map(r => ({
       id_input: r.id_input,
       id_product: r.id_product,
       id_laboratory: r.id_laboratory,
@@ -93,7 +160,28 @@ export class ProductInputsService {
         id_laboratory: r.lab_id,
         name: r.lab_name,
       }
-    })) as any;
+    }));
+
+    return {
+      data,
+      summary: {
+        period: {
+          startDate: filters.startDate ?? null,
+          endDate: filters.endDate ?? null,
+        },
+        entries: {
+          count: rows.length,
+          totalBoxes,
+          totalUnits,
+          totalSubtotal,
+        },
+        outputs: {
+          count: Number(outputsSummary.count ?? 0),
+          totalQuantity: Number(outputsSummary.total_quantity ?? 0),
+          totalSubtotal: Number(outputsSummary.total_subtotal ?? 0),
+        },
+      },
+    };
   }
 
   async findOne(id: number): Promise<ProductInput> {
